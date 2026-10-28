@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.routers.health import router as health_router
+from app.routers.preprocess import router as preprocess_router
 from app.services.model_service import load_model
 API_V1_PREFIX = "/api/v1"
 
@@ -21,3 +22,4 @@ app = FastAPI(title="reseña de productos",
              )
 
 app.include_router(health_router, prefix=API_V1_PREFIX)
+app.include_router(preprocess_router, prefix=API_V1_PREFIX)
