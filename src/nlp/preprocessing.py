@@ -1,5 +1,3 @@
-#Normalización y tokenización inicial para reseñas de productos en español.
-
 import re
 import unicodedata
 from functools import lru_cache
@@ -21,6 +19,10 @@ _STEMMER = SnowballStemmer("spanish")
 
 
 def normalize_text(text: str) -> str:
+    """Normaliza con Unicode NFC, minúsculas, URLs y espacios.
+
+    Mantiene tildes, números, emojis, puntuación y palabras de negación.
+    """
     if not isinstance(text, str):
         raise TypeError("El texto debe ser una cadena (str).")
     normalized = unicodedata.normalize("NFC", text)
@@ -30,6 +32,7 @@ def normalize_text(text: str) -> str:
 
 
 def tokenize_text(text: str) -> list[str]:
+    """Separa tokens y conserva puntuación, emojis y números."""
     return _TOKEN_RE.findall(normalize_text(text))
 
 
@@ -51,6 +54,7 @@ def remove_stopwords(tokens: Iterable[str]) -> list[str]:
 
 
 def stem_tokens(tokens: Iterable[str]) -> list[str]:
+    """Aplica SnowballStemmer a tokens léxicos; conserva signos y emojis."""
     words = _validate_tokens(tokens)
     return [_STEMMER.stem(token) if _WORD_RE.fullmatch(token) else token
             for token in words]
@@ -64,6 +68,8 @@ def _spanish_model():
         return spacy.load("es_core_news_sm", disable=["ner", "parser"])
     except OSError as exc:
         raise RuntimeError(
+            "No está instalado el modelo spaCy es_core_news_sm. "
+            "Ejecuta: python -m spacy download es_core_news_sm"
         ) from exc
 
 
@@ -74,3 +80,4 @@ def lemmatize_tokens(tokens: Iterable[str]) -> list[str]:
     doc = _spanish_model()(" ".join(words))
     return [token.lemma_.lower() if token.lemma_ else token.text.lower()
             for token in doc if not token.is_space]
+

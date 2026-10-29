@@ -20,4 +20,8 @@ pydantic==2.10.4
 
 # Pruebas automatizadas
 pytest==8.3.4
-httpx==0.28.1
+httpx==0.28.17
+
+
+#huggingface para la data
+huggingface_hub>=0.27,<2.0

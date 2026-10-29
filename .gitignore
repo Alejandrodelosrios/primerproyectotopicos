@@ -1,1 +1,27 @@
-data/raw/reviews.csv
+# Entornos virtuales
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Dataset
+/data/raw/
+/data/processed/
+
+# Modelos entrenados
+*.joblib
+*.pkl
+
+# Mantener métricas
+!metrics.json
+
+# Archivos locales
+.env
+*.log
+.ipynb_checkpoints/
+
+# Frontend
+node_modules/
+dist/
