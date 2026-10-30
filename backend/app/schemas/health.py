@@ -5,5 +5,8 @@ class HealthResponse(BaseModel):
     """
      Estado del servicio y del modelo.
     """
-    status: Literal["ok","degraded"]
-    model_loaded: bool 
+    status: Literal["healthy","degraded"]
+    model_loaded: bool
+    # Version del modelo cargado ("final", "legacy").
+    # Es None cuando no hay modelo cargado.
+    model_version: str | None = None

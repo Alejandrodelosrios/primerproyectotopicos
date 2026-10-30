@@ -1,13 +1,14 @@
+from app.core.config import MODEL_VERSION
 HEALTH_URL = "/api/v1/health"
 
 
 # ---------- Caso bueno: todo funciona ----------
 
-def test_health_when_model_is_loaded_returns_ok(client, model_available):
+def test_health_when_model_is_loaded_returns_healthy(client, model_available):
     response = client.get(HEALTH_URL)
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "model_loaded": True}
+    assert response.json() == {"status": "healthy", "model_loaded": True,"model_version": MODEL_VERSION,}
 
 
 # ---------- Caso malo: el modelo no está disponible ----------
@@ -16,13 +17,13 @@ def test_health_when_model_is_not_loaded_returns_503_degraded(client, model_unav
     response = client.get(HEALTH_URL)
 
     assert response.status_code == 503
-    assert response.json() == {"status": "degraded", "model_loaded": False}
+    assert response.json() == {"status": "degraded", "model_loaded": False,"model_version": None,}
 
 
 def test_health_when_model_is_not_loaded_never_reports_ok(client, model_unavailable):
     response = client.get(HEALTH_URL)
 
-    assert response.json()["status"] != "ok"
+    assert response.json()["status"] != "healthy"
 
 
 # ---------- Casos intermedios: bordes y contrato ----------
@@ -30,7 +31,7 @@ def test_health_when_model_is_not_loaded_never_reports_ok(client, model_unavaila
 def test_health_response_has_exactly_the_contract_fields(client, model_available):
     response = client.get(HEALTH_URL)
 
-    assert set(response.json().keys()) == {"status", "model_loaded"}
+    assert set(response.json().keys()) == {"status", "model_loaded","model_version"}
 
 
 def test_health_response_is_json(client, model_available):
