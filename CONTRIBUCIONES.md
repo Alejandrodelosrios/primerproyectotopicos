@@ -105,3 +105,54 @@ El historial de Git será la evidencia principal para validar estas contribucion
 
 
 ## Desde aqui deben continuar los demas
+
+
+## Brayan Gonzales
+
+**Área:** Frontend.
+**Tecnologías:** React, TypeScript, Bootstrap y Vite.
+
+### Primer avance: formulario y vista de preprocesamiento
+
+Implementé una interfaz que permite ingresar una reseña y consultar
+su preprocesamiento mediante la API del backend.
+
+### Contribuciones realizadas
+
+- Integración de Bootstrap para los estilos de la interfaz.
+- Formulario de ingreso de reseñas con contador de caracteres.
+- Validación del texto entre 3 y 5000 caracteres, después de
+  eliminar espacios al inicio y al final.
+- Consumo del endpoint POST /api/v1/preprocess mediante fetch.
+- Visualización del texto original, texto normalizado y tokens.
+- Manejo del estado de carga y mensajes de error.
+- Configuración del proxy de Vite para conectar con el backend
+  durante el desarrollo.
+- Incorporación de etiquetas y atributos de accesibilidad.
+
+### Archivos principales
+
+- frontend/src/App.tsx
+- frontend/src/main.tsx
+- frontend/src/index.css
+- frontend/vite.config.ts
+- frontend/package.json
+- frontend/package-lock.json
+
+### Evidencia en Git
+
+| Commit | Descripción |
+| --- | --- |
+| 1eb3a58 | feat(frontend): agregar formulario y vista de preprocesamiento |
+
+### Verificación
+
+- Compilación con npm run build: correcta.
+- Revisión con npm run lint: sin errores.
+
+### Trabajo pendiente
+
+- Integrar la predicción de estrellas cuando esté disponible.
+- Mostrar las etapas adicionales de preprocesamiento cuando
+  las exponga la API.
+- Implementar el panel de métricas del modelo.
