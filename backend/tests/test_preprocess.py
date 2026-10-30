@@ -11,11 +11,10 @@ def test_preprocess_valid_review_returns_normalized_text_and_tokens(client):
     response = client.post(PREPROCESS_URL, json={"text": "NO me GUSTÓ la batería"})
 
     assert response.status_code == 200
-    assert response.json() == {
-        "original_text": "NO me GUSTÓ la batería",
-        "normalized_text": "no me gustó la batería",
-        "tokens": ["no", "me", "gustó", "la", "batería"],
-    }
+    body = response.json()
+    assert body["original_text"] == "NO me GUSTÓ la batería"
+    assert body["normalized_text"] == "no me gustó la batería"
+    assert body["tokens"] == ["no", "me", "gustó", "la", "batería"]
 
 
 # ---------- Casos malos: entradas inválidas ----------
@@ -103,7 +102,11 @@ def test_preprocess_splits_punctuation_and_emoji(client):
 def test_preprocess_response_has_exactly_the_contract_fields(client):
     response = client.post(PREPROCESS_URL, json={"text": "buen producto"})
 
-    assert set(response.json().keys()) == {"original_text", "normalized_text", "tokens"}
+    assert set(response.json().keys()) == {
+        "original_text", "normalized_text", "tokens",
+        "filtered_tokens", "morphological_method",
+        "morphological_tokens", "processed_text",
+    }
 
 
 def test_preprocess_rejects_get_method(client):
@@ -131,3 +134,70 @@ def test_preprocess_is_documented_in_openapi(client):
     response = client.get("/openapi.json")
 
     assert PREPROCESS_URL in response.json()["paths"]
+
+# ---------- Etapas nuevas: stop words, raices y texto procesado ----------
+
+def test_preprocess_removes_stopwords_but_keeps_negations(client):
+    body = client.post(
+        PREPROCESS_URL,
+        json={"text": "NO me gustó la batería, pero la pantalla es excelente!"},
+    ).json()
+
+    assert body["filtered_tokens"] == [
+        "no", "gustó", "batería", ",", "pantalla", "excelente", "!"
+    ]
+
+
+def test_preprocess_applies_stemming_to_filtered_tokens(client):
+    body = client.post(
+        PREPROCESS_URL,
+        json={"text": "NO me gustó la batería, pero la pantalla es excelente!"},
+    ).json()
+
+    assert body["morphological_method"] == "stemming"
+    assert body["morphological_tokens"] == [
+        "no", "gust", "bat", ",", "pantall", "excelent", "!"
+    ]
+
+
+def test_preprocess_processed_text_is_what_the_model_receives(client):
+    """processed_text debe ser identico a lo que produce el transformer
+    que va dentro del modelo (misma logica, sin duplicarla)."""
+    from src.nlp.transformer import SpanishReviewTransformer
+
+    text = "NO me gustó la batería, pero la pantalla es excelente!"
+    body = client.post(PREPROCESS_URL, json={"text": text}).json()
+
+    expected = SpanishReviewTransformer(method="stemming").transform([text])[0]
+    assert body["processed_text"] == expected
+
+
+def test_preprocess_uses_the_method_of_the_loaded_model(client, monkeypatch):
+    monkeypatch.setattr(
+        "app.routers.preprocess.get_nlp_method", lambda: "none"
+    )
+    body = client.post(PREPROCESS_URL, json={"text": "no me gustó"}).json()
+
+    assert body["morphological_method"] == "none"
+    assert body["morphological_tokens"] == body["filtered_tokens"]
+
+
+def test_preprocess_without_model_falls_back_to_stemming(client, monkeypatch):
+    monkeypatch.setattr("app.services.model_service._model", None)
+    response = client.post(PREPROCESS_URL, json={"text": "buen producto"})
+
+    assert response.status_code == 200
+    assert response.json()["morphological_method"] == "stemming"
+
+
+def test_preprocess_lemmatization_without_spacy_model_returns_503(client, monkeypatch):
+    def missing_spacy_model(tokens):
+        raise RuntimeError("No está instalado el modelo spaCy es_core_news_sm")
+
+    monkeypatch.setattr("app.routers.preprocess.get_nlp_method", lambda: "lemmatization")
+    monkeypatch.setattr("app.services.nlp_service.lemmatize_tokens", missing_spacy_model)
+
+    response = client.post(PREPROCESS_URL, json={"text": "buen producto"})
+
+    assert response.status_code == 503
+    assert "es_core_news_sm" in response.json()["detail"]

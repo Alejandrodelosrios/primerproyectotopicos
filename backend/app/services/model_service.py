@@ -31,3 +31,16 @@ def is_model_loaded() -> bool:
     Devuelve False si no hay modelo guardado en memoria 
     """
     return _model is not None
+
+#metodo morfologico que se muestra cuando no hay modelo cargado.
+DEFAULT_NLP_METHOD = "stemming"
+
+def get_nlp_method()-> str:
+    """
+     Devuelve el metodo morfologico ("stemming", "lemmatization" o "none")
+    con el que fue entrenado el modelo cargado, para mostrar el mismo
+    proceso que usa el modelo. Si no hay modelo, usa el valor por defecto
+    """
+    if _model is None:
+        return DEFAULT_NLP_METHOD
+    return _model.named_steps["nlp"].method
