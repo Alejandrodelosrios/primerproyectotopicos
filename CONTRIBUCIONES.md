@@ -191,3 +191,24 @@ visualizar todas las etapas de preprocesamiento expuestas por la API.
 #### Trabajo pendiente
 
 - Implementar el panel de métricas del modelo.
+
+
+### Ajuste de dependencias e integración del entorno Python
+Identifiqué conflictos de versiones que impedían instalar las
+dependencias necesarias para ejecutar el sistema.
+
+#### Contribuciones realizadas
+- Revisión de las dependencias de la raíz y del backend.
+- Centralización de las dependencias Python en requirements.txt.
+- Retiro de las restricciones incompatibles de Starlette y
+  pydantic-core, permitiendo que FastAPI y Pydantic seleccionen
+  sus versiones correspondientes.
+  un poco la comprensión y el mantenimiento del entorno.
+
+#### Archivos modificados
+- requirements.txt
+- backend/requirements.txt (eliminado)
+
+#### Evidencia en Git
+- Rama: feature/dependencies-alignment.
+- Commit: completar después de crearlo.
