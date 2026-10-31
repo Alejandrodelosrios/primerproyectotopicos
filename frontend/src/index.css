@@ -1,0 +1,16 @@
+
+
+
+body {
+  margin: 0;
+  background-color: #f3f5f7;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.texto-resena {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
