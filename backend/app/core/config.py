@@ -14,3 +14,8 @@ if _FINAL_MODEL.exists():
     MODEL_PATH, MODEL_VERSION = _FINAL_MODEL, "final"
 else:
     MODEL_PATH, MODEL_VERSION = _LEGACY_MODEL, "legacy"
+
+# Resultados del entrenamiento
+RESULTS_DIR = MODELS_DIR/ "final"
+METRICS_PATH = RESULTS_DIR / "metrics.json"
+EXPERIMENTS_PATH = RESULTS_DIR / "experiments.csv"
