@@ -156,3 +156,59 @@ su preprocesamiento mediante la API del backend.
 - Mostrar las etapas adicionales de preprocesamiento cuando
   las exponga la API.
 - Implementar el panel de métricas del modelo.
+
+
+### Segundo avance: predicción y preprocesamiento completo
+
+Amplié la interfaz para consultar la predicción de estrellas y
+visualizar todas las etapas de preprocesamiento expuestas por la API.
+
+#### Contribuciones realizadas
+
+- Separación de las peticiones HTTP y los tipos de respuesta
+  en frontend/src/services/reviews.ts.
+- Integración con POST /api/v1/predict.
+- Visualización de la puntuación estimada mediante estrellas.
+- Presentación de la probabilidad de la puntuación predicha.
+- Visualización de probabilidades para las cinco puntuaciones.
+- Ampliación del preprocesamiento para mostrar stop words
+  eliminadas, tokens conservados, raíces o lemas y texto final
+  para el vectorizador TF-IDF.
+- Ejecución paralela de las consultas mediante Promise.allSettled.
+- Manejo independiente de errores de predicción y preprocesamiento.
+- Creación de un componente reutilizable para visualizar tokens.
+
+#### Archivos principales
+
+- frontend/src/App.tsx
+- frontend/src/services/reviews.ts
+
+#### Evidencia en Git
+
+- Rama: feature/frontend-prediction.
+- Commit: completar con el identificador después de crearlo.
+
+#### Trabajo pendiente
+
+- Implementar el panel de métricas del modelo.
+
+
+### Ajuste de dependencias e integración del entorno Python
+Identifiqué conflictos de versiones que impedían instalar las
+dependencias necesarias para ejecutar el sistema.
+
+#### Contribuciones realizadas
+- Revisión de las dependencias de la raíz y del backend.
+- Centralización de las dependencias Python en requirements.txt.
+- Retiro de las restricciones incompatibles de Starlette y
+  pydantic-core, permitiendo que FastAPI y Pydantic seleccionen
+  sus versiones correspondientes.
+  un poco la comprensión y el mantenimiento del entorno.
+
+#### Archivos modificados
+- requirements.txt
+- backend/requirements.txt (eliminado)
+
+#### Evidencia en Git
+- Rama: feature/dependencies-alignment.
+- Commit: completar después de crearlo.

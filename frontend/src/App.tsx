@@ -1,28 +1,72 @@
 import { useState } from "react";
 
+import { obtenerPreprocesamiento, obtenerPrediccion } from "./services/reviews";
+import type { PreprocessResponse, PredictResponse } from "./services/reviews";
 
 
-// representa respuesta que devuelve el backend
-type PreprocessResponse = {
-  original_text: string
-  normalized_text: string
-  tokens: string[]
+
+const ETIQUETAS_METODO = {
+  stemming: 'Raices mediante stemming',
+  lemmatization: 'Lemas mediante lematizacion',
+  none: 'sin transformacion morfologica'
+}
+
+function mensajeError(error: unknown): string {
+  return error instanceof Error
+    ? error.message
+    : 'Ocurrio un error inesperado.'
+}
+
+
+// Reutilizamos este componente para cada lista de palabras.
+function ListaTokens({ tokens }: { tokens: string[] }) {
+  if (tokens.length === 0) {
+    return <p className="text-secondary">No hay tokens en esta etapa.</p>
+  }
+
+  return (
+    <ul className="list-unstyled d-flex flex-wrap gap-2">
+      {tokens.map((token, indice) => (
+        <li key={`${indice}-${token}`}>
+          <span className="badge text-bg-secondary text-wrap">
+            {token}
+          </span>
+        </li>
+      ))}
+    </ul>
+  )
 }
 
 
 function App() {
-
   const [texto, setTexto] = useState('');
-  const [resultado, setResultado] = useState<PreprocessResponse | null>(null);
+  // const [resultado, setResultado] = useState<PreprocessResponse | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
 
+  const [preprocesamiento, setPreprocesamiento] = useState<PreprocessResponse | null>(null)
 
-  async function procesarResena() {
+  const [prediccion, setPrediccion] = useState<PredictResponse | null>(null)
+
+  const [errorPreprocesamiento, setErrorPreprocesamiento] = useState('')
+
+  const [errorPrediccion, setErrorPrediccion] = useState('')
+
+  
+  function limpiarResultados() {
+    setPreprocesamiento(null)
+    setPrediccion(null)
+    setError('')
+    setErrorPreprocesamiento('')
+    setErrorPrediccion('')
+  }
+
+
+
+  async function analizarResena() {
     const textoLimpio = texto.trim()
 
-    setError('')
-    setResultado(null)
+    limpiarResultados()
 
     if (textoLimpio.length < 3 || textoLimpio.length > 5000) {
       setError('La reseña debe tener entre 3 y 5000 caracteres')
@@ -32,41 +76,46 @@ function App() {
     setCargando(true)
 
     try {
-      const respuesta = await fetch('/api/v1/preprocess', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: textoLimpio }),
-      })
+      // Ambas peticiones se ejecutan en paralelo.
+      // Si una falla, todavía podemos mostrar la otra.
+      const [respuestaNlp, respuestaPrediccion] = await Promise.allSettled([
+        obtenerPreprocesamiento(textoLimpio),
+        obtenerPrediccion(textoLimpio),
+      ])
 
-      if (!respuesta.ok) {
-
-        if (respuesta.status === 422)
-          throw new Error( 'El servidor rechazo el texto. Revisa su contenido.', )
-      
-        throw new Error(`No se pudo procesar la reseña. Codigo: ${respuesta.status}.`,)
+      if (respuestaNlp.status === 'fulfilled') {
+        setPreprocesamiento(respuestaNlp.value)
+      } else {
+        setErrorPreprocesamiento(
+          mensajeError(respuestaNlp.reason),
+        )
       }
 
-      const datos: PreprocessResponse = await respuesta.json()
-      setResultado(datos)
+      if (respuestaPrediccion.status === 'fulfilled') {
+        setPrediccion(respuestaPrediccion.value)
+      } else {
+        setErrorPrediccion(
+          mensajeError(respuestaPrediccion.reason),
+        )
+      }
 
-    } catch (error) {
-      setError(
-        error instanceof TypeError
-        ? 'No se pudo conectar con el servicio. Comprueba que esté iniciado.'
-        : error instanceof Error
-            ? error.message
-            : 'Ocurrio un error inesperado',
-      )
     } finally {
       setCargando(false)
     }
   }
 
+  // La API devuelve los tokens originales y los conservados.
+  // La diferencia permite visualizar cuáles fueron eliminados.
+  const tokensConservados = new Set(
+    preprocesamiento?.filtered_tokens ?? [],
+  )
+
+  const tokensEliminados = (
+    preprocesamiento?.tokens ?? []
+  ).filter((token) => !tokensConservados.has(token))
+
 
   return (
-
     <main className="container py-5">
       <div className="row justify-content-center">
         <div className="col-12 col-lg-8">
@@ -91,7 +140,7 @@ function App() {
                 noValidate
                 onSubmit={(event) => {
                   event.preventDefault()
-                  void procesarResena()
+                  void analizarResena()
                 }}
               >
                 <label htmlFor="resena" className="form-label">
@@ -103,14 +152,13 @@ function App() {
                   className="form-control"
                   rows={5}
                   maxLength={5000}
-                  placeholder="Ejemplo: No me gustó la batería, pero la pantalla es excelente."
                   value={texto}
                   disabled={cargando}
                   aria-describedby="ayuda-resena"
+                  placeholder="Ejemplo: No me gustó la batería, pero la pantalla es excelente."
                   onChange={(event) => {
                     setTexto(event.target.value)
-                    setResultado(null)
-                    setError('')
+                    limpiarResultados()
                   }}
                 />
 
@@ -130,58 +178,167 @@ function App() {
                   className="btn btn-primary"
                   disabled={cargando}
                 >
-                  {cargando ? 'Procesando...' : 'Procesar reseña'}
+                  {cargando ? 'Analizando...' : 'Analizar reseña'}
                 </button>
               </form>
             </div>
           </section>
 
           <div aria-live="polite" aria-busy={cargando}>
-            {resultado && (
+            {errorPrediccion && (
+              <div className="alert alert-warning" role="alert">
+                <strong>No se pudo obtener la prediccion</strong>
+                {''}{errorPrediccion}
+              </div>
+            )}
+
+            {prediccion && (
               <section
-                className="card border-0 shadow-sm"
-                aria-labelledby="titulo-resultados"
+                className="card border-0 shadow-sm mb-4"
+                aria-labelledby="titulo-prediccion"
               >
                 <div className="card-body p-4">
-                  <h2 id="titulo-resultados" className="h5 mb-4">
-                    Resultado del preprocesamiento
+                  <h2 id="titulo-prediccion" className="h5 mb-4">
+                    Puntuacion estimada
+                  </h2>
+
+                  <div
+                    className="fs-2 text-warning"
+                    aria-hidden="true"
+                  >
+                    {'★'.repeat(prediccion.prediction.stars)}
+                    {'☆'.repeat(5 - prediccion.prediction.stars)}
+                  </div>
+
+                  <p className="fw-semibold">
+                    {prediccion.prediction.stars} de 5 estrellas
+                  </p>
+
+                  <p>
+                    Probabilidad de esta puntuacion:
+                    {' '}
+                    <strong>
+                      {(prediccion.prediction.confidence * 100).toFixed(1)} %
+                    </strong>
+                  </p>
+
+                  <h3 className="h6 mt-4">
+                    Probabilidad por puntuacion
+                  </h3>
+
+                  {Object.entries(
+                      prediccion.prediction.probabilities,
+                    ).sort(([a], [b]) => Number(a) - Number(b))
+                    .map(([estrellas, probabilidad]) => (
+                      <div key={estrellas} className="mb-2">
+                        <div className="d-flex justify-content-between">
+                          <span>
+                            {estrellas}
+                            {' '}
+                            {estrellas === '1'
+                              ? 'estrella'
+                              : 'estrellas'
+                            }
+                          </span>
+
+                          <span>
+                            {(probabilidad * 100).toFixed(1)} %
+                          </span>
+                        </div>
+
+                        <progress
+                          className="w-100"
+                          max={1}
+                          value={probabilidad}
+                          aria-label={`Probabilidad de ${estrellas} estrellas`}
+                        />
+                      </div>
+                  ))}
+
+                  <p className="small text-secondary mt-3 mb-0">
+                    Modelo: {prediccion.model.name}.
+                    {' '}
+                    {ETIQUETAS_METODO[prediccion.model.method]}.
+                  </p>
+
+                </div>
+              </section>
+            )}
+
+            {errorPreprocesamiento && (
+              <div className="alert alert-warning" role="alert">
+                <strong>No se pudo obtener el preprocesamiento</strong>
+                {' '}{errorPreprocesamiento}
+              </div>
+            )}
+
+            {preprocesamiento && (
+              <section
+                className="card border-0 shadow-sm"
+                aria-labelledby="titulo-preprocesamiento"
+              >
+                <div className="card-body p-4">
+                  <h2
+                    id="titulo-preprocesamiento"
+                    className="h5 mb-4"
+                  >
+                    Preprocesamiento paso a paso
                   </h2>
 
                   <h3 className="h6">1. Texto original</h3>
                   <p className="texto-resena bg-light rounded p-3">
-                    {resultado.original_text}
+                    {preprocesamiento.original_text}
                   </p>
 
                   <h3 className="h6">2. Texto normalizado</h3>
                   <p className="texto-resena bg-light rounded p-3">
-                     {resultado.normalized_text}
+                     {preprocesamiento.normalized_text}
                   </p>
 
                   <h3 className="h6">
-                    3. Tokens ({resultado.tokens.length})
+                    3. Tokens ({preprocesamiento.tokens.length})
+                  </h3>
+                  <ListaTokens tokens={preprocesamiento.tokens} />
+
+                  <h3 className="h6">
+                    4. Stop words eliminadas
+                    {' '}({tokensEliminados.length})
                   </h3>
 
-                  {resultado.tokens.length > 0 ? (
-                    <ul className="list-unstyled d-flex flex-wrap gap-2 mb-0">
-                      {resultado.tokens.map((token, indice) => (
-                        <li key={`${indice}-${token}`}>
-                          <span className="badge text-bg-secondary text-wrap">
-                            {token}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
+                   {tokensEliminados.length > 0 ? (
+                    <ListaTokens tokens={tokensEliminados} />
                   ) : (
-                    <p className="text-secondary mb-0">
-                      El procesamiento no produjo tokens.
+                    <p className="text-secondary">
+                      No se eliminaron stop words.
                     </p>
                   )}
+
+                  <h3 className="h6">5. Tokens sin stop words</h3>
+                  <ListaTokens
+                    tokens={preprocesamiento.filtered_tokens}
+                  />
+
+                  <h3 className="h6">
+                    6. {ETIQUETAS_METODO[
+                      preprocesamiento.morphological_method
+                    ]}
+                  </h3>
+                  <ListaTokens
+                    tokens={preprocesamiento.morphological_tokens}
+                  />
+
+                  <h3 className="h6">
+                    7. Texto final para el vectorizador TF-IDF
+                  </h3>
+                  <p className="texto-resena bg-light rounded p-3 mb-0">
+                    {preprocesamiento.processed_text ||
+                      'El procesamiento produjo un texto vacío.'}
+                  </p>
+
                 </div>
               </section>
             )}
           </div>
-
-
         </div>
       </div>
     </main>
