@@ -1,12 +1,13 @@
 from fastapi import APIRouter,Depends,Response, status
 from app.schemas.health import HealthResponse
+from app.core.config import MODEL_VERSION
 from app.services.model_service import is_model_loaded
 
 router = APIRouter(tags=["Health"])
 
 @router.get("/health", response_model=HealthResponse,
             summary="Verificar el estado del servicio",
-            responses = {503: {"description": HealthResponse,
+            responses = {503: {"model": HealthResponse,
                                "description": """el modelo no
                                               esta disponible"""
                                }
@@ -21,6 +22,6 @@ def get_health(response: Response,
         """
         if not model_loaded:
                 response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-                return HealthResponse(status = "degraded", model_loaded=False)
+                return HealthResponse(status = "degraded", model_loaded=False,model_version=None)
         
-        return HealthResponse(status = "ok", model_loaded=True)
+        return HealthResponse(status = "healthy", model_loaded=True,model_version=MODEL_VERSION)
