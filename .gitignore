@@ -1,1 +1,4 @@
 data/raw/reviews.csv
+data/processed/
+data/processed_con_producto/
+__pycache__/
