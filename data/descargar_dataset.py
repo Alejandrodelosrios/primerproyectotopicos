@@ -61,6 +61,7 @@ def main() -> int:
     df = df.rename(columns={"text": "review_text"})
     columnas = [c for c in ("id", "review_text", "rating") if c in df.columns]
     df = df[columnas].rename(columns={"id": "review_id"})
+    df["language"] = "es"
 
     if len(df) > args.maximo:
         por_clase = args.maximo // 5
