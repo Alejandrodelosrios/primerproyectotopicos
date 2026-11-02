@@ -1,0 +1,148 @@
+{
+  "source_csv": "data\\raw\\reviews.csv",
+  "rows": 20000,
+  "missing_review_text": 0,
+  "empty_review_text": 0,
+  "missing_or_invalid_rating": 0,
+  "duplicate_text_exact": 53,
+  "rating_distribution": {
+    "1": 4000,
+    "2": 4000,
+    "3": 4000,
+    "4": 4000,
+    "5": 4000
+  },
+  "length_words": {
+    "count": 20000.0,
+    "mean": 27.5627,
+    "std": 23.47276117622002,
+    "min": 2.0,
+    "25%": 12.0,
+    "50%": 22.0,
+    "75%": 34.0,
+    "max": 453.0
+  },
+  "top_words": [
+    {
+      "word": "de",
+      "count": 20324
+    },
+    {
+      "word": "que",
+      "count": 19035
+    },
+    {
+      "word": "y",
+      "count": 18336
+    },
+    {
+      "word": "la",
+      "count": 17238
+    },
+    {
+      "word": "el",
+      "count": 16524
+    },
+    {
+      "word": "no",
+      "count": 15525
+    },
+    {
+      "word": "es",
+      "count": 11698
+    },
+    {
+      "word": "en",
+      "count": 9419
+    },
+    {
+      "word": "lo",
+      "count": 9079
+    },
+    {
+      "word": "se",
+      "count": 8980
+    },
+    {
+      "word": "muy",
+      "count": 8208
+    },
+    {
+      "word": "para",
+      "count": 8100
+    },
+    {
+      "word": "a",
+      "count": 7568
+    },
+    {
+      "word": "un",
+      "count": 7291
+    },
+    {
+      "word": "me",
+      "count": 7058
+    },
+    {
+      "word": "pero",
+      "count": 6474
+    },
+    {
+      "word": "con",
+      "count": 6364
+    },
+    {
+      "word": "bien",
+      "count": 5113
+    },
+    {
+      "word": "los",
+      "count": 4877
+    },
+    {
+      "word": "por",
+      "count": 4869
+    },
+    {
+      "word": "las",
+      "count": 4455
+    },
+    {
+      "word": "una",
+      "count": 4306
+    },
+    {
+      "word": "calidad",
+      "count": 3261
+    },
+    {
+      "word": "al",
+      "count": 3133
+    },
+    {
+      "word": "ha",
+      "count": 2990
+    },
+    {
+      "word": "más",
+      "count": 2771
+    },
+    {
+      "word": "como",
+      "count": 2710
+    },
+    {
+      "word": "del",
+      "count": 2678
+    },
+    {
+      "word": "si",
+      "count": 2596
+    },
+    {
+      "word": "he",
+      "count": 2511
+    }
+  ],
+  "note": "Frecuencias descriptivas sin filtrar stop words. No son características aprendidas del modelo."
+}
