@@ -169,7 +169,8 @@ Este proceso deberá generar los siguientes artefactos:
 ### 6. Iniciar FastAPI
 
 ```bash
-uvicorn api.main:app --reload
+# uvicorn api.main:app --reload
+python -m uvicorn app.main:app --app-dir backend --reload
 ```
 
 Documentación de la API:
