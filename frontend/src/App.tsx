@@ -3,7 +3,7 @@ import { useState } from "react";
 import { obtenerPreprocesamiento, obtenerPrediccion } from "./services/reviews";
 import type { PreprocessResponse, PredictResponse } from "./services/reviews";
 
-
+import PanelMetricas from "./components/PanelMetricas";
 
 const ETIQUETAS_METODO = {
   stemming: 'Raices mediante stemming',
@@ -339,6 +339,9 @@ function App() {
               </section>
             )}
           </div>
+
+            <PanelMetricas/>
+
         </div>
       </div>
     </main>
