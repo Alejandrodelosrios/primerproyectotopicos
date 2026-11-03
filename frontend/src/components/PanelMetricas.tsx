@@ -138,13 +138,6 @@ function PanelMetricas() {
 
                     {metricas && (
                         <>
-                        {modelo?.model_version !== 'final' && (
-                            <div className="alert alert-warning">
-                            Este informe corresponde al experimento final.
-                            No se ha confirmado que el modelo activo
-                            corresponda a ese mismo experimento.
-                            </div>
-                        )}
 
                         <h3 className="h6">Datos de la evaluación</h3>
 
